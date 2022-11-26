@@ -1,5 +1,6 @@
 import sqlite3
 
+
 def get_by_title(title):
     with sqlite3.connect("netflix.db") as connection:
         cursor = connection.cursor()
@@ -20,25 +21,28 @@ def get_by_title(title):
         }
         return film
 
+
 def get_by_years(year_1, year_2):
     with sqlite3.connect("netflix.db") as connection:
         cursor = connection.cursor()
         cursor.execute(
-            f"""SELECT title, release_year
-                FROM netflix
-                WHERE release_year BETWEEN {year_1} and {year_2}
-                LIMIT 100
-                """
+            f"""
+            SELECT title, release_year
+            FROM netflix
+            WHERE release_year BETWEEN {year_1} AND {year_2}
+            LIMIT 100
+            """
         )
         data = cursor.fetchall()
         film_list = []
         for i in data:
             film = {
-            "title": data[0],
-            "release_year": data[1]
+                "title": i[0],
+                "release_year": i[1]
             }
             film_list.append(film)
         return film_list
+
 
 def reiting_child():
     with sqlite3.connect("netflix.db") as connection:
@@ -54,12 +58,13 @@ def reiting_child():
         film_list = []
         for i in data:
             film = {
-            "title": data[0],
-            "rating": data[1],
-            "description": data[2]
+            "title": i[0],
+            "rating": i[1],
+            "description": i[2]
             }
             film_list.append(film)
         return film_list
+
 
 def reiting_family():
     with sqlite3.connect("netflix.db") as connection:
@@ -75,12 +80,13 @@ def reiting_family():
         film_list = []
         for i in data:
             film = {
-            "title": data[0],
-            "rating": data[1],
-            "description": data[2]
+            "title": i[0],
+            "rating": i[1],
+            "description": i[2]
             }
             film_list.append(film)
         return film_list
+
 
 def reiting_adult():
     with sqlite3.connect("netflix.db") as connection:
@@ -96,12 +102,13 @@ def reiting_adult():
         film_list = []
         for i in data:
             film = {
-            "title": data[0],
-            "rating": data[1],
-            "description": data[2]
+            "title": i[0],
+            "rating": i[1],
+            "description": i[2]
             }
             film_list.append(film)
         return film_list
+
 
 def get_by_genre(genre):
     with sqlite3.connect("netflix.db") as connection:
@@ -118,32 +125,49 @@ def get_by_genre(genre):
         film_list = []
         for i in data:
             film = {
-            "title": data[0],
-            "description": data[1]
+            "title": i[0],
+            "description": i[1]
             }
             film_list.append(film)
         return film_list
 
+
 def get_by_cast(actor_1, actor_2):
     with sqlite3.connect("netflix.db") as connection:
         cursor = connection.cursor()
+        actors = []
+        answer = []
         cursor.execute(
-            f"""SELECT COUNT(netflix.cast), netflix.cast
+            f"""SELECT netflix.cast
                 FROM netflix
-                WHERE netflix.cast LIKE '%{actor_1}%' and netflix.cast LIKE '%{actor_2}%'  
+                WHERE netflix.cast LIKE '%{actor_1}%' AND netflix.cast LIKE '%{actor_2}%'  
                 GROUP BY netflix.cast                
                 """
         )
+        data = cursor.fetchall()
+        for string in data:
+            string = str(string).replace('(','').replace(')','').replace("'","")
+            spisok = string.split(', ')
+            spisok.remove(actor_1)
+            spisok.remove(actor_2)
+            for name in spisok:
+                actors.append(name)
+        all_actors = set(actors)
+        for i in all_actors:
+            kolvo = actors.count(i)
+            if kolvo >2:
+                answer.append(i)
+    return answer
 
-    return cursor.fetchall()
 
 def find_a_movie(film_type, release_year, genre):
     with sqlite3.connect("netflix.db") as connection:
         cursor = connection.cursor()
         cursor.execute(
-            f"""SELECT title, description
-                FROM netflix
-                WHERE  type = '%{film_type}%' AND release_year = '%{release_year}%' AND listed_in LIKE '%{genre}%'
-                """
+            f"""
+            SELECT title, description
+            FROM netflix
+            WHERE  type = {film_type} AND release_year = {release_year} AND listed_in LIKE '%{genre}%'
+            """
         )
         return cursor.fetchall()
